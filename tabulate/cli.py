@@ -59,6 +59,7 @@ def _main():
     -F FPFMT, --float FPFMT   floating point number format (default: g)
     -I INTFMT, --int INTFMT   integer point number format (default: "")
     -f FMT, --format FMT      set output table format (default: simple)
+    --title TITLE             print TITLE as a plain text line above each table
 
     Supported output formats: asciidoc, colon_grid, double_grid, double_outline,
     fancy_grid, fancy_outline, github, grid, heavy_grid, heavy_outline, html, jira,
@@ -88,6 +89,7 @@ def _main():
                 "int=",
                 "colalign=",
                 "format=",
+                "title=",
             ],
         )
     except getopt.GetoptError as e:
@@ -102,6 +104,7 @@ def _main():
     fileformat = "rsv"
     sep = r"\s+"
     outfile = "-"
+    title = None
     special_headers_values = ["firstrow", "keys"]
     for opt, value in opts:
         if opt in ["-1", "--header"]:
@@ -131,6 +134,8 @@ def _main():
             tablefmt = value
         elif opt in ["-s", "--sep"]:
             sep = value
+        elif opt == "--title":
+            title = value
         elif opt in ["-h", "--help"]:
             print(usage)
             sys.exit(0)
@@ -175,6 +180,7 @@ def _main():
                 intfmt=intfmt,
                 file=out,
                 colalign=colalign,
+                title=title,
             )
 
 
@@ -208,8 +214,12 @@ def _open_and_pprint_file(reader, f, *args, **kwargs):
             _pprint_file(reader, fobj, *args, **kwargs)
 
 
-def _pprint_file(reader, fobject, headers, tablefmt, floatfmt, intfmt, file, colalign):
+def _pprint_file(
+    reader, fobject, headers, tablefmt, floatfmt, intfmt, file, colalign, title=None
+):
     table = reader(fobject)
+    if title is not None:
+        print(title, file=file)
     print(
         tabulate(
             table,
